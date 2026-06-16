@@ -1,23 +1,103 @@
-<form id="form">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload - ARCHIPEDES</title>
+  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+</head>
 
-  <label>Title</label>
-  <input id="title" required>
+<body>
 
-  <label>Year</label>
-  <input id="year" type="number" required>
+<div class="page-shell">
 
-  <label>Genre</label>
-  <input id="genre" required>
+  <div class="form-card">
 
-  <label>Video URL</label>
-  <input id="video" required>
+    <h2>Upload Public Domain Film</h2>
 
-  <label>Thumbnail URL</label>
-  <input id="thumbnail" placeholder="Paste image link" required>
+    <form id="form">
 
-  <label>Description</label>
-  <textarea id="description" required></textarea>
+      <label>Title</label>
+      <input id="title" required>
 
-  <button class="btn btn-primary" type="submit">Submit</button>
+      <label>Year</label>
+      <input id="year" type="number" required>
 
-</form>
+      <label>Genre</label>
+      <input id="genre" required>
+
+      <label>Video URL</label>
+      <input id="video" required>
+
+      <label>Thumbnail URL</label>
+      <input id="thumbnail" required>
+
+      <label>Description</label>
+      <textarea id="description" required></textarea>
+
+      <button class="btn btn-primary" type="submit">Submit</button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { ref, push } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+emailjs.init("5eYYbZYCikjsyOd56");
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "https://kuledever.github.io/archipedes/login.html";
+  }
+});
+
+document.getElementById("form").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const movie = {
+    title: title.value,
+    year: year.value,
+    genre: genre.value,
+    video: video.value,
+    thumbnail: thumbnail.value,
+    description: description.value
+  };
+
+  const uploadRef = await push(ref(db, "uploads"), {
+    title: movie.title,
+    year: movie.year,
+    genre: movie.genre,
+    videoUrl: movie.video,
+    thumbnail: movie.thumbnail,
+    description: movie.description,
+    status: "pending"
+  });
+
+  await emailjs.send(
+    "service_1jufcmr",
+    "template_82j9hzk",
+    {
+      title: movie.title,
+      year: movie.year,
+      genre: movie.genre,
+      video: movie.video,
+      thumbnail: movie.thumbnail,
+      description: movie.description,
+      id: uploadRef.key
+    }
+  );
+
+  alert("Upload submitted for review");
+  document.getElementById("form").reset();
+};
+
+</script>
+
+</body>
+</html>
