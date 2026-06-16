@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Watch - ARCHIPEDES</title>
+  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+</head>
+
+<body>
+
+<div class="page-shell">
+
+  <div class="section-card" id="player">
+    Loading movie...
+  </div>
+
+</div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+const player = document.getElementById("player");
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) window.location.href = "/login.html";
+});
+
+async function load() {
+  const snap = await get(ref(db, "movies/" + id));
+  const m = snap.val();
+
+  player.innerHTML = `
+    <h2>${m.title}</h2>
+    <video controls width="100%">
+      <source src="${m.video}" type="video/mp4">
+    </video>
+  `;
+}
+
+load();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ARCHIPEDES</title>
+  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+</head>
+
+<body>
+
+<div class="page-shell">
+
+  <header class="topbar">
+    <div class="brand-mark">ARCHIPEDES</div>
+
+    <nav class="menu">
+      <a class="btn btn-secondary" href="/archive.html">Archive</a>
+      <a class="btn btn-secondary" href="/upload.html">Upload</a>
+      <button class="btn btn-primary" id="logout">Logout</button>
+    </nav>
+  </header>
+
+  <section class="hero-copy">
+    <div class="eyebrow">Public Domain Film Archive</div>
+
+    <h1 class="hero-title">Welcome to ARCHIPEDES</h1>
+
+    <p class="hero-lead">
+      Watch, upload, and explore public domain cinema.
+    </p>
+  </section>
+
+</div>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "/login.html";
+  }
+});
+
+document.getElementById("logout").onclick = async () => {
+  await signOut(auth);
+  window.location.href = "/login.html";
+};
+</script>
+
+</body>
+</html>

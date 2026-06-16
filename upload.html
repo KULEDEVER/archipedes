@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload - ARCHIPEDES</title>
+  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+</head>
+
+<body>
+
+<div class="page-shell">
+
+  <div class="form-card">
+
+    <h2>Upload Public Domain Film</h2>
+
+    <form id="form">
+
+      <label>Title</label>
+      <input id="title">
+
+      <label>Year</label>
+      <input id="year">
+
+      <label>Genre</label>
+      <input id="genre">
+
+      <label>Video URL (Internet Archive later)</label>
+      <input id="video">
+
+      <button class="btn btn-primary">Submit</button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { ref, push } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) window.location.href = "/login.html";
+});
+
+document.getElementById("form").onsubmit = async (e) => {
+  e.preventDefault();
+
+  await push(ref(db, "uploads"), {
+    title: title.value,
+    year: year.value,
+    genre: genre.value,
+    videoUrl: video.value,
+    status: "pending"
+  });
+
+  alert("Upload submitted for review");
+};
+</script>
+
+</body>
+</html>
