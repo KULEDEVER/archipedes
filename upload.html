@@ -1,64 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Watch - ARCHIPEDES</title>
-  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
-</head>
+<form id="form">
 
-<body>
+  <label>Title</label>
+  <input id="title" required>
 
-<div class="page-shell">
+  <label>Year</label>
+  <input id="year" type="number" required>
 
-  <div class="section-card" id="player">
-    Loading movie...
-  </div>
+  <label>Genre</label>
+  <input id="genre" required>
 
-</div>
+  <label>Video URL</label>
+  <input id="video" required>
 
-<script type="module">
-import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+  <label>Thumbnail URL</label>
+  <input id="thumbnail" placeholder="Paste image link" required>
 
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+  <label>Description</label>
+  <textarea id="description" required></textarea>
 
-const player = document.getElementById("player");
+  <button class="btn btn-primary" type="submit">Submit</button>
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href =
-      "https://kuledever.github.io/archipedes/login.html";
-  }
-});
-
-async function load() {
-
-  if (!id) {
-    player.innerHTML = "Invalid movie ID";
-    return;
-  }
-
-  const snap = await get(ref(db, "uploads/" + id)); // ✅ FIXED PATH
-  const m = snap.val();
-
-  if (!m || m.status !== "approved") {
-    player.innerHTML = "Movie not found or not approved.";
-    return;
-  }
-
-  player.innerHTML = `
-    <h2 class="section-title">${m.title}</h2>
-    <p class="section-copy">${m.year} • ${m.genre}</p>
-
-    <video controls width="100%">
-      <source src="${m.videoUrl}" type="video/mp4">
-    </video>
-  `;
-}
-
-load();
-</script>
-
-</body>
-</html>
+</form>
