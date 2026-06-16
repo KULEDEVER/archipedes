@@ -31,28 +31,50 @@ import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-da
 const grid = document.getElementById("grid");
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "https://kuledever.github.io/archipedes/login.html";
+  if (!user) {
+    window.location.href =
+      "https://kuledever.github.io/archipedes/login.html";
+  }
 });
 
 async function loadMovies() {
-  const snap = await get(ref(db, "movies"));
+
+  const snap = await get(ref(db, "uploads"));
   const data = snap.val();
 
   grid.innerHTML = "";
 
-  for (let id in data) {
+  if (!data) {
+    grid.innerHTML = `<p>No approved films yet.</p>`;
+    return;
+  }
+
+  let count = 0;
+
+  for (const id in data) {
+
     const m = data[id];
+
+    // 🔒 ONLY APPROVED FILMS
+    if (!m || m.status !== "approved") continue;
+
+    count++;
 
     grid.innerHTML += `
       <div class="section-card">
         <h2 class="section-title">${m.title}</h2>
         <p class="section-copy">${m.year} • ${m.genre}</p>
 
-        <a class="btn btn-primary" href="https://kuledever.github.io/archipedes/watch.html?id=${id}">
+        <a class="btn btn-primary"
+           href="https://kuledever.github.io/archipedes/watch.html?id=${id}">
           Watch
         </a>
       </div>
     `;
+  }
+
+  if (count === 0) {
+    grid.innerHTML = `<p>No approved films yet.</p>`;
   }
 }
 
