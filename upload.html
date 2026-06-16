@@ -1,63 +1,198 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Upload - ARCHIPEDES</title>
-  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+
+<title>Upload - ARCHIPEDES</title>
+
+<link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+
 </head>
+
 
 <body>
 
+
 <div class="page-shell">
 
-  <div class="form-card">
 
-    <h2>Upload Public Domain Film</h2>
+<div class="form-card">
 
-    <form id="form">
 
-      <label>Title</label>
-      <input id="title">
+<h2>Upload Public Domain Film</h2>
 
-      <label>Year</label>
-      <input id="year">
 
-      <label>Genre</label>
-      <input id="genre">
+<form id="form">
 
-      <label>Video URL (Internet Archive later)</label>
-      <input id="video">
 
-      <button class="btn btn-primary">Submit</button>
+<label>Title</label>
+<input id="title" required>
 
-    </form>
 
-  </div>
+<label>Year</label>
+<input id="year" type="number" required>
+
+
+<label>Genre</label>
+<input id="genre" required>
+
+
+<label>Video URL (Internet Archive)</label>
+<input id="video" required>
+
+
+<button class="btn btn-primary" type="submit">
+Submit
+</button>
+
+
+</form>
+
 
 </div>
 
-<script type="module">
-import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { ref, push } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "https://kuledever.github.io/archipedes/login.html";
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+
+
+<script type="module">
+
+
+import { auth, db } from "./firebase.js";
+
+
+import {
+onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+
+import {
+ref,
+push
+}
+from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+
+
+// EmailJS public key
+
+emailjs.init("5eYYbZYCikjsyOd56");
+
+
+
+// Require login
+
+onAuthStateChanged(auth, (user)=>{
+
+if(!user){
+
+window.location.href =
+"https://kuledever.github.io/archipedes/login.html";
+
+}
+
 });
 
-document.getElementById("form").onsubmit = async (e) => {
-  e.preventDefault();
 
-  await push(ref(db, "uploads"), {
-    title: title.value,
-    year: year.value,
-    genre: genre.value,
-    videoUrl: video.value,
-    status: "pending"
-  });
 
-  alert("Upload submitted for review");
+
+
+document.getElementById("form").onsubmit = async (e)=>{
+
+
+e.preventDefault();
+
+
+
+const movie = {
+
+
+title: document.getElementById("title").value,
+
+year: document.getElementById("year").value,
+
+genre: document.getElementById("genre").value,
+
+video: document.getElementById("video").value
+
+
 };
+
+
+
+// Create RTDB upload entry
+
+const uploadRef = await push(
+
+ref(db,"uploads"),
+
+{
+
+title: movie.title,
+
+year: movie.year,
+
+genre: movie.genre,
+
+videoUrl: movie.video,
+
+status:"pending"
+
+}
+
+);
+
+
+
+
+// Send email with ID
+
+await emailjs.send(
+
+"service_1jufcmr",
+
+"template_82j9hzk",
+
+{
+
+title: movie.title,
+
+year: movie.year,
+
+genre: movie.genre,
+
+video: movie.video,
+
+id: uploadRef.key
+
+}
+
+);
+
+
+
+
+alert("Upload submitted for review");
+
+
+
+document.getElementById("form").reset();
+
+
+
+};
+
+
+
 </script>
 
+
 </body>
+
 </html>
