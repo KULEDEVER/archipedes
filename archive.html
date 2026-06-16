@@ -12,10 +12,8 @@
   <header class="topbar">
     <div class="brand-mark">ARCHIPEDES</div>
 
-    <input id="search" placeholder="genre:comedy year:1926">
-
     <nav class="menu">
-      <a class="btn btn-secondary" href="https://kuledever.github.io/archipedes/index.html">Home</a>
+      <a class="btn btn-secondary" href="index.html">Home</a>
     </nav>
   </header>
 
@@ -24,6 +22,7 @@
 </div>
 
 <script type="module">
+
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
@@ -32,8 +31,7 @@ const grid = document.getElementById("grid");
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href =
-      "https://kuledever.github.io/archipedes/login.html";
+    window.location.href = "login.html";
   }
 });
 
@@ -45,40 +43,49 @@ async function loadMovies() {
   grid.innerHTML = "";
 
   if (!data) {
-    grid.innerHTML = `<p>No approved films yet.</p>`;
+    grid.innerHTML = "<p>No approved films yet.</p>";
     return;
   }
-
-  let count = 0;
 
   for (const id in data) {
 
     const m = data[id];
 
-    // 🔒 ONLY APPROVED FILMS
     if (!m || m.status !== "approved") continue;
 
-    count++;
-
     grid.innerHTML += `
-      <div class="section-card">
-        <h2 class="section-title">${m.title}</h2>
-        <p class="section-copy">${m.year} • ${m.genre}</p>
+      <div class="section-card" style="display:flex; gap:16px; align-items:center; padding:18px;">
 
-        <a class="btn btn-primary"
-           href="https://kuledever.github.io/archipedes/watch.html?id=${id}">
-          Watch
-        </a>
+        <img src="${m.thumbnail}"
+             style="width:90px; height:130px; object-fit:cover; border-radius:12px;">
+
+        <div style="flex:1">
+
+          <h2 class="section-title" style="font-size:1.3rem;">
+            ${m.title}
+          </h2>
+
+          <p class="section-copy">
+            ${m.year} • ${m.genre}
+          </p>
+
+          <p class="section-copy" style="font-size:0.9rem;">
+            ${m.description}
+          </p>
+
+          <a class="btn btn-primary" href="watch.html?id=${id}">
+            Watch
+          </a>
+
+        </div>
+
       </div>
     `;
-  }
-
-  if (count === 0) {
-    grid.innerHTML = `<p>No approved films yet.</p>`;
   }
 }
 
 loadMovies();
+
 </script>
 
 </body>
