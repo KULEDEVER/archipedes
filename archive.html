@@ -15,7 +15,7 @@
     <input id="search" placeholder="genre:comedy year:1926">
 
     <nav class="menu">
-      <a class="btn btn-secondary" href="/index.html">Home</a>
+      <a class="btn btn-secondary" href="https://kuledever.github.io/archipedes/index.html">Home</a>
     </nav>
   </header>
 
@@ -31,7 +31,7 @@ import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-da
 const grid = document.getElementById("grid");
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "/login.html";
+  if (!user) window.location.href = "https://kuledever.github.io/archipedes/login.html";
 });
 
 async function loadMovies() {
@@ -48,7 +48,7 @@ async function loadMovies() {
         <h2 class="section-title">${m.title}</h2>
         <p class="section-copy">${m.year} • ${m.genre}</p>
 
-        <a class="btn btn-primary" href="/watch.html?id=${id}">
+        <a class="btn btn-primary" href="https://kuledever.github.io/archipedes/watch.html?id=${id}">
           Watch
         </a>
       </div>
