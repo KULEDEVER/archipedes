@@ -1,198 +1,64 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
-<title>Upload - ARCHIPEDES</title>
-
-<link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
-
+  <title>Watch - ARCHIPEDES</title>
+  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
 </head>
-
 
 <body>
 
-
 <div class="page-shell">
 
-
-<div class="form-card">
-
-
-<h2>Upload Public Domain Film</h2>
-
-
-<form id="form">
-
-
-<label>Title</label>
-<input id="title" required>
-
-
-<label>Year</label>
-<input id="year" type="number" required>
-
-
-<label>Genre</label>
-<input id="genre" required>
-
-
-<label>Video URL (Internet Archive)</label>
-<input id="video" required>
-
-
-<button class="btn btn-primary" type="submit">
-Submit
-</button>
-
-
-</form>
-
+  <div class="section-card" id="player">
+    Loading movie...
+  </div>
 
 </div>
-
-
-</div>
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
-
 
 <script type="module">
-
-
 import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
 
-import {
-onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+const player = document.getElementById("player");
 
-
-import {
-ref,
-push
-}
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-
-
-
-// EmailJS public key
-
-emailjs.init("5eYYbZYCikjsyOd56");
-
-
-
-// Require login
-
-onAuthStateChanged(auth, (user)=>{
-
-if(!user){
-
-window.location.href =
-"https://kuledever.github.io/archipedes/login.html";
-
-}
-
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href =
+      "https://kuledever.github.io/archipedes/login.html";
+  }
 });
 
+async function load() {
 
+  if (!id) {
+    player.innerHTML = "Invalid movie ID";
+    return;
+  }
 
+  const snap = await get(ref(db, "uploads/" + id)); // ✅ FIXED PATH
+  const m = snap.val();
 
+  if (!m || m.status !== "approved") {
+    player.innerHTML = "Movie not found or not approved.";
+    return;
+  }
 
-document.getElementById("form").onsubmit = async (e)=>{
+  player.innerHTML = `
+    <h2 class="section-title">${m.title}</h2>
+    <p class="section-copy">${m.year} • ${m.genre}</p>
 
-
-e.preventDefault();
-
-
-
-const movie = {
-
-
-title: document.getElementById("title").value,
-
-year: document.getElementById("year").value,
-
-genre: document.getElementById("genre").value,
-
-video: document.getElementById("video").value
-
-
-};
-
-
-
-// Create RTDB upload entry
-
-const uploadRef = await push(
-
-ref(db,"uploads"),
-
-{
-
-title: movie.title,
-
-year: movie.year,
-
-genre: movie.genre,
-
-videoUrl: movie.video,
-
-status:"pending"
-
+    <video controls width="100%">
+      <source src="${m.videoUrl}" type="video/mp4">
+    </video>
+  `;
 }
 
-);
-
-
-
-
-// Send email with ID
-
-await emailjs.send(
-
-"service_1jufcmr",
-
-"template_82j9hzk",
-
-{
-
-title: movie.title,
-
-year: movie.year,
-
-genre: movie.genre,
-
-video: movie.video,
-
-id: uploadRef.key
-
-}
-
-);
-
-
-
-
-alert("Upload submitted for review");
-
-
-
-document.getElementById("form").reset();
-
-
-
-};
-
-
-
+load();
 </script>
 
-
 </body>
-
 </html>
