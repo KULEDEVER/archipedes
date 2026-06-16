@@ -26,17 +26,33 @@ const id = params.get("id");
 const player = document.getElementById("player");
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "https://kuledever.github.io/archipedes/login.html";
+  if (!user) {
+    window.location.href =
+      "https://kuledever.github.io/archipedes/login.html";
+  }
 });
 
 async function load() {
-  const snap = await get(ref(db, "movies/" + id));
+
+  if (!id) {
+    player.innerHTML = "Invalid movie ID";
+    return;
+  }
+
+  const snap = await get(ref(db, "uploads/" + id)); // ✅ FIXED PATH
   const m = snap.val();
 
+  if (!m || m.status !== "approved") {
+    player.innerHTML = "Movie not found or not approved.";
+    return;
+  }
+
   player.innerHTML = `
-    <h2>${m.title}</h2>
+    <h2 class="section-title">${m.title}</h2>
+    <p class="section-copy">${m.year} • ${m.genre}</p>
+
     <video controls width="100%">
-      <source src="${m.video}" type="video/mp4">
+      <source src="${m.videoUrl}" type="video/mp4">
     </video>
   `;
 }
