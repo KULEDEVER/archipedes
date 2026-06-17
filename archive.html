@@ -1,92 +1,274 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Archive - ARCHIPEDES</title>
-  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+
+<title>Archive - ARCHIPEDES</title>
+
+<link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+
 </head>
+
 
 <body>
 
+
 <div class="page-shell">
 
-  <header class="topbar">
-    <div class="brand-mark">ARCHIPEDES</div>
 
-    <nav class="menu">
-      <a class="btn btn-secondary" href="index.html">Home</a>
-    </nav>
-  </header>
+<header class="topbar">
 
-  <div class="section-grid" id="grid"></div>
+<div class="brand-mark">
+ARCHIPEDES
+</div>
+
+
+<nav class="menu">
+
+<a class="btn btn-secondary"
+href="index.html">
+Home
+</a>
+
+</nav>
+
+
+</header>
+
+
+
+<div class="section-grid" id="grid"></div>
+
+
 
 </div>
 
+
+
+
 <script type="module">
 
+
 import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
-const grid = document.getElementById("grid");
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-  }
+import {
+onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+
+import {
+ref,
+get
+}
+from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+
+
+const grid =
+document.getElementById("grid");
+
+
+
+onAuthStateChanged(auth,(user)=>{
+
+
+if(!user){
+
+window.location.href =
+"login.html";
+
+}
+
+
 });
 
-async function loadMovies() {
 
-  const snap = await get(ref(db, "uploads"));
-  const data = snap.val();
 
-  grid.innerHTML = "";
 
-  if (!data) {
-    grid.innerHTML = "<p>No approved films yet.</p>";
-    return;
-  }
 
-  for (const id in data) {
+async function loadMovies(){
 
-    const m = data[id];
 
-    if (!m || m.status !== "approved") continue;
+const snap =
+await get(ref(db,"uploads"));
 
-    grid.innerHTML += `
-      <div class="section-card" style="display:flex; gap:16px; align-items:center; padding:18px;">
 
-        <img src="${m.thumbnail}"
-             style="width:90px; height:130px; object-fit:cover; border-radius:12px;">
+const data =
+snap.val();
 
-        <div style="flex:1">
 
-          <h2 class="section-title" style="font-size:1.3rem;">
-            ${m.title}
-          </h2>
 
-          <p class="section-copy">
-            ${m.year} • ${m.genre}
-          </p>
+grid.innerHTML="";
 
-          <p class="section-copy" style="font-size:0.9rem;">
-            ${m.description}
-          </p>
 
-          <a class="btn btn-primary" href="watch.html?id=${id}">
-            Watch
-          </a>
 
-        </div>
+if(!data){
 
-      </div>
-    `;
-  }
+grid.innerHTML =
+"<p>No approved films yet.</p>";
+
+return;
+
 }
+
+
+
+
+let count=0;
+
+
+
+for(const id in data){
+
+
+
+const m=data[id];
+
+
+
+if(!m || m.status !== "approved")
+continue;
+
+
+
+count++;
+
+
+
+grid.innerHTML += `
+
+
+
+<div class="section-card"
+
+style="
+
+display:flex;
+
+gap:16px;
+
+align-items:center;
+
+padding:18px;
+
+">
+
+
+
+<img src="${m.thumbnail}"
+
+style="
+
+width:90px;
+
+height:130px;
+
+object-fit:cover;
+
+border-radius:12px;
+
+">
+
+
+
+
+
+<div style="flex:1;">
+
+
+
+<h2 class="section-title">
+
+${m.title}
+
+</h2>
+
+
+
+<p class="section-copy">
+
+${m.year} • ${m.genre}
+
+</p>
+
+
+
+<p class="section-copy">
+
+${m.description}
+
+</p>
+
+
+
+<div style="display:flex;gap:10px;">
+
+
+
+<a class="btn btn-primary"
+
+href="watch.html?id=${id}">
+
+Watch
+
+</a>
+
+
+
+<a class="btn btn-secondary"
+
+href="${m.videoUrl}"
+
+download>
+
+Download
+
+</a>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+`;
+
+
+
+}
+
+
+
+if(count===0){
+
+grid.innerHTML =
+"<p>No approved films yet.</p>";
+
+}
+
+
+
+}
+
+
 
 loadMovies();
 
+
+
 </script>
 
+
 </body>
+
 </html>
