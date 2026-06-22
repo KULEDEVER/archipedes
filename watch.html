@@ -1,272 +1,94 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
-<title>Watch - ARCHIPEDES</title>
-
-<link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
-
-
-<style>
-
-.player-box {
-
-width:100%;
-
-}
-
-
-.movie-video {
-
-width:100%;
-
-height:auto;
-
-max-height:80vh;
-
-object-fit:contain;
-
-display:block;
-
-border-radius:12px;
-
-}
-
-
-</style>
-
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - ARCHIPEDES</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
-
-
 <body>
 
-
 <div class="page-shell">
+  <header class="topbar">
+    <a href="index.html" class="brand-mark">ARCHIPEDES</a>
+    <nav class="menu">
+      <a class="btn btn-secondary" href="index.html">Home</a>
+      <a class="btn btn-secondary" href="archive.html">Archive</a>
+    </nav>
+  </header>
 
-
-<div class="section-card" id="player">
-
-Loading movie...
-
+  <div id="player-container" style="padding: 40px 0;">
+    <div style="text-align: center; padding: 100px;">Loading movie...</div>
+  </div>
 </div>
-
-
-</div>
-
-
-
 
 <script type="module">
-
-
 import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+const container = document.getElementById("player-container");
 
-import {
+async function loadMovie() {
+  if (!id) {
+    container.innerHTML = "<div style='text-align: center; padding: 100px;'>Invalid movie ID</div>";
+    return;
+  }
 
-onAuthStateChanged
+  try {
+    const snap = await get(ref(db, "uploads/" + id));
+    const movie = snap.val();
 
+    if (!movie || movie.status !== "approved") {
+      container.innerHTML = "<div style='text-align: center; padding: 100px;'>Movie not found or not approved.</div>";
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="hero-copy" style="padding: 0 0 40px; text-align: left;">
+        <span class="eyebrow">${movie.year} • ${movie.genre}</span>
+        <h1 class="hero-title" style="font-size: 2.5rem; margin-bottom: 10px;">${movie.title}</h1>
+      </div>
+
+      <div class="player-box">
+        <video class="movie-video" controls playsinline poster="${movie.thumbnail}">
+          <source src="${movie.videoUrl}" type="video/mp4">
+          Your browser does not support video.
+        </video>
+      </div>
+
+      <div style="margin-top: 40px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
+        <div>
+          <h3 style="margin-bottom: 15px;">Description</h3>
+          <p class="section-copy" style="font-size: 1.1rem; line-height: 1.8;">${movie.description}</p>
+        </div>
+        <div>
+          <h3 style="margin-bottom: 15px;">Actions</h3>
+          <a class="btn btn-primary" href="${movie.videoUrl}" download style="width: 100%; text-align: center; margin-bottom: 10px;">
+            Download Movie
+          </a>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">
+            This film is in the public domain.
+          </p>
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error("Error loading movie:", error);
+    container.innerHTML = "<div style='text-align: center; padding: 100px; color: var(--accent-color);'>Failed to load movie.</div>";
+  }
 }
 
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-
-
-
-import {
-
-ref,
-
-get
-
-}
-
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-
-
-
-
-
-const params =
-new URLSearchParams(window.location.search);
-
-
-const id =
-params.get("id");
-
-
-
-const player =
-document.getElementById("player");
-
-
-
-
-
-
-async function loadMovie(){
-
-
-
-if(!id){
-
-player.innerHTML =
-"Invalid movie ID";
-
-return;
-
-}
-
-
-
-
-const snap =
-await get(ref(db,"uploads/"+id));
-
-
-
-const movie =
-snap.val();
-
-
-
-
-
-if(!movie || movie.status !== "approved"){
-
-
-player.innerHTML =
-"Movie not found or not approved.";
-
-return;
-
-
-}
-
-
-
-
-
-player.innerHTML = `
-
-
-
-<h2 class="section-title">
-
-${movie.title}
-
-</h2>
-
-
-
-<p class="section-copy">
-
-${movie.year} • ${movie.genre}
-
-</p>
-
-
-
-
-
-<div class="player-box">
-
-
-<video 
-class="movie-video"
-controls
-playsinline>
-
-
-<source
-
-src="${movie.videoUrl}"
-
-type="video/mp4">
-
-
-Your browser does not support video.
-
-
-</video>
-
-
-
-</div>
-
-
-
-
-
-<p class="section-copy">
-
-${movie.description}
-
-</p>
-
-
-
-
-
-<a 
-
-class="btn btn-secondary"
-
-href="${movie.videoUrl}"
-
-download>
-
-
-Download Movie
-
-
-</a>
-
-
-
-`;
-
-
-
-}
-
-
-
-
-
-
-onAuthStateChanged(auth,(user)=>{
-
-
-
-if(!user){
-
-
-window.location.href =
-"login.html";
-
-
-return;
-
-
-}
-
-
-
-loadMovie();
-
-
-
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+  loadMovie();
 });
-
-
-
 </script>
 
-
-
 </body>
-
 </html>

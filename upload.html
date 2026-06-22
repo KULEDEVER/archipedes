@@ -1,50 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Upload - ARCHIPEDES</title>
-  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <div class="page-shell">
+  <header class="topbar">
+    <a href="index.html" class="brand-mark">ARCHIPEDES</a>
+    <nav class="menu">
+      <a class="btn btn-secondary" href="index.html">Home</a>
+      <a class="btn btn-secondary" href="archive.html">Archive</a>
+    </nav>
+  </header>
 
-  <div class="form-card">
-
-    <h2>Upload Public Domain Film</h2>
+  <div class="form-card" style="max-width: 700px;">
+    <h2>Submit a Film</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 30px; text-align: center;">
+      Help us expand our collection of public domain cinema.
+    </p>
 
     <form id="form">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <label for="title">Film Title</label>
+          <input id="title" required placeholder="e.g. Metropolis">
+        </div>
+        <div>
+          <label for="year">Release Year</label>
+          <input id="year" type="number" required placeholder="e.g. 1927">
+        </div>
+      </div>
 
-      <label>Title</label>
-      <input id="title" required>
+      <label for="genre">Genre</label>
+      <input id="genre" required placeholder="e.g. Sci-Fi, Drama">
 
-      <label>Year</label>
-      <input id="year" type="number" required>
+      <label for="video">Video Source URL (MP4)</label>
+      <input id="video" required placeholder="https://example.com/movie.mp4">
 
-      <label>Genre</label>
-      <input id="genre" required>
+      <label for="thumbnail">Thumbnail Image URL</label>
+      <input id="thumbnail" required placeholder="https://example.com/poster.jpg">
 
-      <label>Video URL</label>
-      <input id="video" required>
+      <label for="description">Brief Description</label>
+      <textarea id="description" required rows="4" placeholder="Describe the film and its historical significance..."></textarea>
 
-      <label>Thumbnail URL</label>
-      <input id="thumbnail" required>
-
-      <label>Description</label>
-      <textarea id="description" required></textarea>
-
-      <button class="btn btn-primary" type="submit">Submit</button>
-
+      <button class="btn btn-primary" type="submit" style="width: 100%; padding: 15px;">Submit for Review</button>
     </form>
-
   </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script type="module">
-
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import { ref, push } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
@@ -53,50 +63,60 @@ emailjs.init("5eYYbZYCikjsyOd56");
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href = "https://kuledever.github.io/archipedes/login.html";
+    window.location.href = "login.html";
   }
 });
 
 document.getElementById("form").onsubmit = async (e) => {
   e.preventDefault();
+  const submitBtn = e.target.querySelector('button');
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
 
   const movie = {
-    title: title.value,
-    year: year.value,
-    genre: genre.value,
-    video: video.value,
-    thumbnail: thumbnail.value,
-    description: description.value
+    title: document.getElementById("title").value,
+    year: document.getElementById("year").value,
+    genre: document.getElementById("genre").value,
+    video: document.getElementById("video").value,
+    thumbnail: document.getElementById("thumbnail").value,
+    description: document.getElementById("description").value
   };
 
-  const uploadRef = await push(ref(db, "uploads"), {
-    title: movie.title,
-    year: movie.year,
-    genre: movie.genre,
-    videoUrl: movie.video,
-    thumbnail: movie.thumbnail,
-    description: movie.description,
-    status: "pending"
-  });
-
-  await emailjs.send(
-    "service_1jufcmr",
-    "template_82j9hzk",
-    {
+  try {
+    const uploadRef = await push(ref(db, "uploads"), {
       title: movie.title,
       year: movie.year,
       genre: movie.genre,
-      video: movie.video,
+      videoUrl: movie.video,
       thumbnail: movie.thumbnail,
       description: movie.description,
-      id: uploadRef.key
-    }
-  );
+      status: "pending",
+      submittedAt: new Date().toISOString()
+    });
 
-  alert("Upload submitted for review");
-  document.getElementById("form").reset();
+    await emailjs.send(
+      "service_1jufcmr",
+      "template_82j9hzk",
+      {
+        title: movie.title,
+        year: movie.year,
+        genre: movie.genre,
+        video: movie.video,
+        thumbnail: movie.thumbnail,
+        description: movie.description,
+        id: uploadRef.key
+      }
+    );
+
+    alert("Thank you! Your submission has been sent for review.");
+    document.getElementById("form").reset();
+  } catch (error) {
+    alert("Error: " + error.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Submit for Review";
+  }
 };
-
 </script>
 
 </body>

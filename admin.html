@@ -1,207 +1,80 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
-<title>ARCHIPEDES Admin</title>
-
-<link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - ARCHIPEDES</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
 
-
 <div class="page-shell">
+  <header class="topbar">
+    <a href="index.html" class="brand-mark">ARCHIPEDES</a>
+  </header>
 
-
-<div class="form-card">
-
-
-<h2 id="message">
-Processing request...
-</h2>
-
-
-<p id="details"></p>
-
-
+  <div class="form-card">
+    <h2 id="message">Processing request...</h2>
+    <div id="details" style="text-align: center; color: var(--text-secondary); margin-top: 20px; font-family: monospace; font-size: 0.9rem;"></div>
+    
+    <div style="margin-top: 30px; text-align: center;">
+      <a href="index.html" class="btn btn-secondary">Return Home</a>
+    </div>
+  </div>
 </div>
-
-
-</div>
-
-
-
 
 <script type="module">
-
-
 import { auth, db } from "./firebase.js";
-
-
-import {
-
-onAuthStateChanged
-
-}
-
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-
-
-
-import {
-
-ref,
-update
-
-}
-
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-
-
-
-
-
-const message =
-document.getElementById("message");
-
-
-const details =
-document.getElementById("details");
-
-
-
-
-
-onAuthStateChanged(auth, async (user)=>{
-
-
-
-if(!user){
-
-
-window.location.href =
-"https://kuledever.github.io/archipedes/login.html";
-
-
-return;
-
-
-}
-
-
-
-
-
-const params =
-new URLSearchParams(window.location.search);
-
-
-
-const action =
-params.get("action");
-
-
-const id =
-params.get("id");
-
-
-
-
-
-if(!action || !id){
-
-
-message.textContent =
-"Invalid request";
-
-
-return;
-
-
-}
-
-
-
-
-
-let status;
-
-
-
-if(action === "approve"){
-
-
-status = "approved";
-
-
-}
-
-
-else if(action === "deny"){
-
-
-status = "denied";
-
-
-}
-
-
-else{
-
-
-message.textContent =
-"Unknown action";
-
-
-return;
-
-
-}
-
-
-
-
-
-await update(
-
-ref(db,"uploads/" + id),
-
-{
-
-status: status,
-
-reviewedBy: user.email,
-
-reviewedAt: new Date().toISOString()
-
-}
-
-);
-
-
-
-
-
-message.textContent =
-"Upload " + status;
-
-
-details.textContent =
-"Upload ID: " + id;
-
-
-
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { ref, update } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+const message = document.getElementById("message");
+const details = document.getElementById("details");
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const action = params.get("action");
+  const id = params.get("id");
+
+  if (!action || !id) {
+    message.textContent = "Invalid Request";
+    details.textContent = "Missing action or ID parameters.";
+    return;
+  }
+
+  let status;
+  if (action === "approve") {
+    status = "approved";
+    message.style.color = "#4CAF50";
+  } else if (action === "deny") {
+    status = "denied";
+    message.style.color = "var(--accent-color)";
+  } else {
+    message.textContent = "Unknown Action";
+    return;
+  }
+
+  try {
+    await update(ref(db, "uploads/" + id), {
+      status: status,
+      reviewedBy: user.email,
+      reviewedAt: new Date().toISOString()
+    });
+
+    message.textContent = "Upload " + (status.charAt(0).toUpperCase() + status.slice(1));
+    details.textContent = "ID: " + id;
+  } catch (error) {
+    message.textContent = "Error";
+    message.style.color = "var(--accent-color)";
+    details.textContent = error.message;
+  }
 });
-
-
-
 </script>
 
-
-
 </body>
-
 </html>

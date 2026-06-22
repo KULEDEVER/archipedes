@@ -1,274 +1,93 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
-<title>Archive - ARCHIPEDES</title>
-
-<link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archive - ARCHIPEDES</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
 
-
 <div class="page-shell">
+  <header class="topbar">
+    <a href="index.html" class="brand-mark">ARCHIPEDES</a>
+    <nav class="menu">
+      <a class="btn btn-secondary" href="index.html">Home</a>
+      <a class="btn btn-secondary" href="upload.html">Upload</a>
+    </nav>
+  </header>
 
+  <section class="hero-copy" style="padding: 60px 0 20px;">
+    <span class="eyebrow">The Collection</span>
+    <h1 class="hero-title">Film Archive</h1>
+  </section>
 
-<header class="topbar">
-
-<div class="brand-mark">
-ARCHIPEDES
+  <div class="section-grid" id="grid">
+    <div style="grid-column: 1/-1; text-align: center; padding: 40px;">Loading archive...</div>
+  </div>
 </div>
-
-
-<nav class="menu">
-
-<a class="btn btn-secondary"
-href="index.html">
-Home
-</a>
-
-</nav>
-
-
-</header>
-
-
-
-<div class="section-grid" id="grid"></div>
-
-
-
-</div>
-
-
-
 
 <script type="module">
-
-
 import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
+const grid = document.getElementById("grid");
 
-import {
-onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-
-
-import {
-ref,
-get
-}
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-
-
-
-const grid =
-document.getElementById("grid");
-
-
-
-onAuthStateChanged(auth,(user)=>{
-
-
-if(!user){
-
-window.location.href =
-"login.html";
-
-}
-
-
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+  }
 });
 
+async function loadMovies() {
+  try {
+    const snap = await get(ref(db, "uploads"));
+    const data = snap.val();
 
+    grid.innerHTML = "";
 
+    if (!data) {
+      grid.innerHTML = "<div style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No approved films yet.</div>";
+      return;
+    }
 
+    let count = 0;
+    for (const id in data) {
+      const m = data[id];
+      if (!m || m.status !== "approved") continue;
 
-async function loadMovies(){
+      count++;
+      const card = document.createElement("div");
+      card.className = "section-card";
+      card.innerHTML = `
+        <img src="${m.thumbnail}" alt="${m.title}" class="card-img">
+        <div class="card-content">
+          <h2 class="section-title">${m.title}</h2>
+          <p class="section-copy">${m.year} • ${m.genre}</p>
+          <p class="section-copy" style="flex-grow: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+            ${m.description}
+          </p>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <a class="btn btn-primary" href="watch.html?id=${id}">Watch</a>
+            <a class="btn btn-secondary" href="${m.videoUrl}" download>Download</a>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
 
-
-const snap =
-await get(ref(db,"uploads"));
-
-
-const data =
-snap.val();
-
-
-
-grid.innerHTML="";
-
-
-
-if(!data){
-
-grid.innerHTML =
-"<p>No approved films yet.</p>";
-
-return;
-
+    if (count === 0) {
+      grid.innerHTML = "<div style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No approved films yet.</div>";
+    }
+  } catch (error) {
+    console.error("Error loading movies:", error);
+    grid.innerHTML = "<div style='grid-column: 1/-1; text-align: center; color: var(--accent-color);'>Failed to load archive. Please try again later.</div>";
+  }
 }
-
-
-
-
-let count=0;
-
-
-
-for(const id in data){
-
-
-
-const m=data[id];
-
-
-
-if(!m || m.status !== "approved")
-continue;
-
-
-
-count++;
-
-
-
-grid.innerHTML += `
-
-
-
-<div class="section-card"
-
-style="
-
-display:flex;
-
-gap:16px;
-
-align-items:center;
-
-padding:18px;
-
-">
-
-
-
-<img src="${m.thumbnail}"
-
-style="
-
-width:90px;
-
-height:130px;
-
-object-fit:cover;
-
-border-radius:12px;
-
-">
-
-
-
-
-
-<div style="flex:1;">
-
-
-
-<h2 class="section-title">
-
-${m.title}
-
-</h2>
-
-
-
-<p class="section-copy">
-
-${m.year} • ${m.genre}
-
-</p>
-
-
-
-<p class="section-copy">
-
-${m.description}
-
-</p>
-
-
-
-<div style="display:flex;gap:10px;">
-
-
-
-<a class="btn btn-primary"
-
-href="watch.html?id=${id}">
-
-Watch
-
-</a>
-
-
-
-<a class="btn btn-secondary"
-
-href="${m.videoUrl}"
-
-download>
-
-Download
-
-</a>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-`;
-
-
-
-}
-
-
-
-if(count===0){
-
-grid.innerHTML =
-"<p>No approved films yet.</p>";
-
-}
-
-
-
-}
-
-
 
 loadMovies();
-
-
-
 </script>
 
-
 </body>
-
 </html>

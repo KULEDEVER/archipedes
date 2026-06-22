@@ -1,34 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>ARCHIPEDES</title>
-  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARCHIPEDES - Public Domain Cinema</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <div class="page-shell">
-
   <header class="topbar">
-    <div class="brand-mark">ARCHIPEDES</div>
-
+    <a href="index.html" class="brand-mark">ARCHIPEDES</a>
     <nav class="menu">
-      <a class="btn btn-secondary" href="https://kuledever.github.io/archipedes/archive.html">Archive</a>
-      <a class="btn btn-secondary" href="https://kuledever.github.io/archipedes/upload.html">Upload</a>
+      <a class="btn btn-secondary" href="archive.html">Archive</a>
+      <a class="btn btn-secondary" href="upload.html">Upload</a>
       <button class="btn btn-primary" id="logout">Logout</button>
     </nav>
   </header>
 
   <section class="hero-copy">
-    <div class="eyebrow">Public Domain Film Archive</div>
-
+    <span class="eyebrow">Public Domain Film Archive</span>
     <h1 class="hero-title">Welcome to ARCHIPEDES</h1>
-
     <p class="hero-lead">
-      Watch, upload, and explore public domain cinema.
+      Discover the golden age of cinema. Watch, upload, and explore curated public domain films from around the world.
     </p>
+    <div class="hero-actions">
+      <a href="archive.html" class="btn btn-primary">Browse Archive</a>
+    </div>
   </section>
-
 </div>
 
 <script type="module">
@@ -38,13 +37,17 @@ from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href = "https://kuledever.github.io/archipedes/login.html";
+    window.location.href = "login.html";
   }
 });
 
 document.getElementById("logout").onclick = async () => {
-  await signOut(auth);
-  window.location.href = "https://kuledever.github.io/archipedes/login.html";
+  try {
+    await signOut(auth);
+    window.location.href = "login.html";
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
 };
 </script>
 

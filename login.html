@@ -1,32 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - ARCHIPEDES</title>
-  <link rel="stylesheet" href="https://kuledever.github.io/boxoprompt/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <div class="page-shell">
-
   <div class="form-card">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <a href="index.html" class="brand-mark">ARCHIPEDES</a>
+    </div>
+    <h2>Sign In</h2>
+    
+    <button class="btn btn-secondary" id="google" style="width: 100%; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google">
+      Continue with Google
+    </button>
 
-    <h2>Sign in to ARCHIPEDES</h2>
-
-    <button class="btn btn-primary" id="google">Sign in with Google</button>
+    <div style="text-align: center; margin-bottom: 20px; color: var(--text-secondary); font-size: 0.8rem;">
+      OR
+    </div>
 
     <form id="emailForm">
-      <label>Email</label>
-      <input id="email" type="email">
+      <label for="email">Email Address</label>
+      <input id="email" type="email" required placeholder="name@example.com">
 
-      <label>Password</label>
-      <input id="password" type="password">
+      <label for="password">Password</label>
+      <input id="password" type="password" required placeholder="••••••••">
 
-      <button class="btn btn-primary" type="submit">Login</button>
+      <button class="btn btn-primary" type="submit" style="width: 100%;">Login</button>
     </form>
-
   </div>
-
 </div>
 
 <script type="module">
@@ -39,20 +46,25 @@ import {
 
 document.getElementById("emailForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  await signInWithEmailAndPassword(
-    auth,
-    email.value,
-    password.value
-  );
-
-  window.location.href = "https://kuledever.github.io/archipedes/index.html";
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "index.html";
+  } catch (error) {
+    alert("Login failed: " + error.message);
+  }
 });
 
 document.getElementById("google").onclick = async () => {
   const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-  window.location.href = "https://kuledever.github.io/archipedes/index.html";
+  try {
+    await signInWithPopup(auth, provider);
+    window.location.href = "index.html";
+  } catch (error) {
+    alert("Google sign-in failed: " + error.message);
+  }
 };
 </script>
 
