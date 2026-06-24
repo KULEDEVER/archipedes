@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found - ARCHIPEDES</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page-shell">
+  <header class="topbar">
+    <a href="index.html" class="brand-mark">ARCHIPEDES</a>
+    <nav class="menu" aria-label="Main navigation">
+      <a class="btn btn-secondary" href="index.html">Home</a>
+      <a class="btn btn-secondary" href="archive.html">Archive</a>
+      <a class="btn btn-secondary" href="sitemap.html">Sitemap</a>
+      <a class="btn btn-primary" href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main class="hero-copy">
+    <div class="error-code" aria-hidden="true">404</div>
+    <span class="eyebrow">Missing Reel</span>
+    <h1 class="hero-title">We could not find that page.</h1>
+    <p class="hero-lead">
+      The link may be outdated, the film may have moved, or the address may have a typo.
+    </p>
+
+    <form class="search-box" id="site-search" role="search">
+      <label for="search" class="visually-hidden">Search site pages</label>
+      <input id="search" type="search" placeholder="Search archive, upload, login..." autocomplete="off">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+
+    <div class="hero-actions" style="margin-top: 34px;">
+      <a href="index.html" class="btn btn-primary">Return Home</a>
+      <a href="archive.html" class="btn btn-secondary">Browse Archive</a>
+      <a href="sitemap.html" class="btn btn-secondary">View Sitemap</a>
+    </div>
+  </main>
+</div>
+
+<script>
+const pages = [
+  {
+    title: "Home",
+    url: "index.html",
+    keywords: "home start welcome public domain cinema archipedes"
+  },
+  {
+    title: "Film Archive",
+    url: "archive.html",
+    keywords: "archive films movies watch collection browse"
+  },
+  {
+    title: "Submit a Film",
+    url: "upload.html",
+    keywords: "upload submit film movie source poster description"
+  },
+  {
+    title: "Sign In",
+    url: "login.html",
+    keywords: "login sign in account member"
+  },
+  {
+    title: "Sitemap",
+    url: "sitemap.html",
+    keywords: "sitemap links help navigation pages"
+  }
+];
+
+const form = document.getElementById("site-search");
+const search = document.getElementById("search");
+const results = document.getElementById("search-results");
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const query = search.value.trim().toLowerCase();
+
+  if (!query) {
+    results.textContent = "Type a word like archive, upload, or login to find a page.";
+    return;
+  }
+
+  const matches = pages.filter((page) => {
+    return page.title.toLowerCase().includes(query) || page.keywords.includes(query);
+  });
+
+  if (!matches.length) {
+    results.innerHTML = 'No matching page found. Try the <a href="sitemap.html">sitemap</a>.';
+    return;
+  }
+
+  results.innerHTML = matches.map((page) => {
+    return `<p><a href="${page.url}">${page.title}</a></p>`;
+  }).join("");
+});
+</script>
+
+</body>
+</html>
