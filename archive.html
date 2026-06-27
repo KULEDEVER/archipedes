@@ -6,12 +6,50 @@
   <title>Archive - ARCHIPEDES</title>
   <link rel="stylesheet" href="style.css">
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <style>
+    /* Basic styling for the search bar to ensure it fits well in the topbar */
+    .search-container {
+      flex-grow: 1;
+      margin: 0 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .search-bar {
+      width: 100%;
+      max-width: 400px;
+      padding: 8px 15px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    .search-bar:focus {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: var(--accent-color, #fff);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+    /* Ensure topbar layout handles the search bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+    }
+  </style>
 </head>
 <body>
 
 <div class="page-shell">
   <header class="topbar">
     <a href="index.html" class="brand-mark">ARCHIPEDES</a>
+    
+    <!-- Search Bar added here -->
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search films by title, genre, or year..." class="search-bar">
+    </div>
+
     <nav class="menu">
       <a class="btn btn-secondary" href="index.html">Home</a>
       <a class="btn btn-secondary" href="upload.html">Upload</a>
@@ -35,6 +73,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/f
 import { ref, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
 const grid = document.getElementById("grid");
+const searchInput = document.getElementById("searchInput");
+let allMovies = {}; // Store all movies to allow local filtering
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
@@ -42,51 +82,65 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+function renderMovies(movies, filter = "") {
+  grid.innerHTML = "";
+  let count = 0;
+  const searchTerm = filter.toLowerCase();
+
+  for (const id in movies) {
+    const m = movies[id];
+    if (!m || m.status !== "approved") continue;
+
+    // Filtering logic
+    const matchesSearch = 
+      m.title.toLowerCase().includes(searchTerm) || 
+      m.genre.toLowerCase().includes(searchTerm) || 
+      m.year.toString().includes(searchTerm);
+
+    if (!matchesSearch) continue;
+
+    count++;
+    const card = document.createElement("div");
+    card.className = "section-card";
+    card.innerHTML = `
+      <img src="${m.thumbnail}" alt="${m.title}" class="card-img">
+      <div class="card-content">
+        <h2 class="section-title">${m.title}</h2>
+        <p class="section-copy">${m.year} • ${m.genre}</p>
+        <p class="section-copy" style="flex-grow: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+          ${m.description}
+        </p>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <a class="btn btn-primary" href="watch.html?id=${id}">Watch</a>
+          <a class="btn btn-secondary" href="${m.videoUrl}" download>Download</a>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+
+  if (count === 0) {
+    grid.innerHTML = `<div style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>
+      ${filter ? "No films match your search." : "No approved films yet."}
+    </div>`;
+  }
+}
+
 async function loadMovies() {
   try {
     const snap = await get(ref(db, "uploads"));
-    const data = snap.val();
-
-    grid.innerHTML = "";
-
-    if (!data) {
-      grid.innerHTML = "<div style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No approved films yet.</div>";
-      return;
-    }
-
-    let count = 0;
-    for (const id in data) {
-      const m = data[id];
-      if (!m || m.status !== "approved") continue;
-
-      count++;
-      const card = document.createElement("div");
-      card.className = "section-card";
-      card.innerHTML = `
-        <img src="${m.thumbnail}" alt="${m.title}" class="card-img">
-        <div class="card-content">
-          <h2 class="section-title">${m.title}</h2>
-          <p class="section-copy">${m.year} • ${m.genre}</p>
-          <p class="section-copy" style="flex-grow: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
-            ${m.description}
-          </p>
-          <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <a class="btn btn-primary" href="watch.html?id=${id}">Watch</a>
-            <a class="btn btn-secondary" href="${m.videoUrl}" download>Download</a>
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
-    }
-
-    if (count === 0) {
-      grid.innerHTML = "<div style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No approved films yet.</div>";
-    }
+    allMovies = snap.val() || {};
+    renderMovies(allMovies);
   } catch (error) {
     console.error("Error loading movies:", error);
     grid.innerHTML = "<div style='grid-column: 1/-1; text-align: center; color: var(--accent-color);'>Failed to load archive. Please try again later.</div>";
   }
 }
+
+// Add event listener for real-time searching
+searchInput.addEventListener("input", (e) => {
+  renderMovies(allMovies, e.target.value);
+});
 
 loadMovies();
 </script>
